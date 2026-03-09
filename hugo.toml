@@ -5,6 +5,11 @@ title = "khrhee's Research Blog"
 theme = "PaperMod"
 hasCJKLanguage = true
 
+[taxonomies]
+  tag = "tags"
+  category = "categories"
+  series = "series"
+
 [pagination]
   pagerSize = 10
 
@@ -22,10 +27,35 @@ hasCJKLanguage = true
     Title = "khrhee's Research Blog"
     Content = "의료 AI와 뇌신경과학 연구를 기록합니다."
 
+[[menu.main]]
+  name = "Series"
+  url = "/series/"
+  weight = 5
+
+[[menu.main]]
+  name = "Tags"
+  url = "/tags/"
+  weight = 10
+
+[[menu.main]]
+  name = "Search"
+  url = "/search/"
+  weight = 15
+
 [markup]
+  [markup.goldmark]
+    [markup.goldmark.renderer]
+      unsafe = true
+    [markup.goldmark.extensions]
+      [markup.goldmark.extensions.passthrough]
+        enable = true
+        [markup.goldmark.extensions.passthrough.delimiters]
+          block = [['$$', '$$']]
+          inline = [['$', '$']]
   [markup.highlight]
     style = "monokai"
     lineNos = false
+    noClasses = false
 
 [outputs]
   home = ["HTML", "RSS", "JSON"]

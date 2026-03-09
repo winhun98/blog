@@ -1,0 +1,23 @@
+{{- $series := .GetTerms "series" }}
+{{- if $series }}
+{{- range $series }}
+<div class="series-nav" style="background: var(--code-bg); border-radius: 8px; padding: 16px 20px; margin: 20px 0;">
+  <details>
+    <summary style="cursor: pointer; font-weight: 600; font-size: 0.95em;">
+      📚 {{ .LinkTitle }} 시리즈
+    </summary>
+    <ol style="margin-top: 10px; padding-left: 20px;">
+      {{- range .Pages.ByDate }}
+      <li style="margin: 4px 0;">
+        {{- if eq $.Page.RelPermalink .RelPermalink }}
+        <strong>{{ .LinkTitle }}</strong> ← 현재 글
+        {{- else }}
+        <a href="{{ .Permalink }}">{{ .LinkTitle }}</a>
+        {{- end }}
+      </li>
+      {{- end }}
+    </ol>
+  </details>
+</div>
+{{- end }}
+{{- end }}
