@@ -1,7 +1,7 @@
 baseURL = "https://winhun98.github.io/blog/"
 languageCode = "ko"
 defaultContentLanguage = "ko"
-title = "khrhee's Research Blog"
+title = "Research Notes"
 theme = "PaperMod"
 hasCJKLanguage = true
 
@@ -24,7 +24,7 @@ hasCJKLanguage = true
   description = "의료 AI, 오프라인 강화학습, 뇌신경과학 연구 블로그"
 
   [params.homeInfoParams]
-    Title = "khrhee's Research Blog"
+    Title = "Research Notes"
     Content = "의료 AI와 뇌신경과학 연구를 기록합니다."
 
 [[menu.main]]
