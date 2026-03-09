@@ -1,0 +1,31 @@
+baseURL = "https://winhun98.github.io/blog/"
+languageCode = "ko"
+defaultContentLanguage = "ko"
+title = "khrhee's Research Blog"
+theme = "PaperMod"
+hasCJKLanguage = true
+
+[pagination]
+  pagerSize = 10
+
+[params]
+  env = "production"
+  showReadingTime = true
+  showShareButtons = false
+  showPostNavLinks = true
+  showBreadCrumbs = true
+  showCodeCopyButtons = true
+  defaultTheme = "auto"
+  description = "의료 AI, 오프라인 강화학습, 뇌신경과학 연구 블로그"
+
+  [params.homeInfoParams]
+    Title = "khrhee's Research Blog"
+    Content = "의료 AI와 뇌신경과학 연구를 기록합니다."
+
+[markup]
+  [markup.highlight]
+    style = "monokai"
+    lineNos = false
+
+[outputs]
+  home = ["HTML", "RSS", "JSON"]
