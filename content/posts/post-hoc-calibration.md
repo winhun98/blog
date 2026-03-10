@@ -20,11 +20,11 @@ Reliability diagram을 처음 그려봤을 때 이게 얼마나 심한지 알았
 
 ## Calibration이란
 
-정의는 단순하다. "예측 확률 $p$인 샘플들 중 실제 양성 비율이 $p$"이면 **완벽히 보정됨(perfectly calibrated)**이다.
+정의는 단순하다. "예측 확률 $p$인 샘플들 중 실제 양성 비율이 $p$"이면 <strong>완벽히 보정됨(perfectly calibrated)</strong>이다.
 
 $$P(Y=1 \mid \hat{p}(X) = p) = p, \quad \forall p \in [0, 1]$$
 
-이걸 측정하는 표준 지표가 **ECE(Expected Calibration Error)**다. 예측 확률을 $B$개 구간(bin)으로 나누고, 각 구간에서 예측 평균과 실제 빈도의 차이를 가중 평균한다.
+이걸 측정하는 표준 지표가 <strong>ECE(Expected Calibration Error)</strong>다. 예측 확률을 $B$개 구간(bin)으로 나누고, 각 구간에서 예측 평균과 실제 빈도의 차이를 가중 평균한다.
 
 $$ECE = \sum_{b=1}^{B} \frac{|B_b|}{n} \left| \text{acc}(B_b) - \text{conf}(B_b) \right|$$
 

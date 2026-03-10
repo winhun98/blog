@@ -16,7 +16,7 @@ mermaid: true
 
 RCT에서 나온 **ATE**(Average Treatment Effect)는 "이 약은 *평균적으로* 효과가 있다"고 말해준다. 하지만 **이 환자에게** 얼마나 효과가 있을지는 알려주지 않는다. NIHSS 25점짜리 중증 환자와 3점짜리 경증 환자가 같은 약에서 같은 이득을 볼 리가 없다.
 
-이 환자 수준의 효과 차이를 **이질적 치료 효과(HTE, Heterogeneous Treatment Effect)**라 부르고, 개인 수준으로 내리면 **ITE(Individual Treatment Effect)**가 된다. 조건부 평균으로 집계하면 **CATE(Conditional Average Treatment Effect)** — 실무에서 추정의 타겟이 되는 양이다.
+이 환자 수준의 효과 차이를 <strong>이질적 치료 효과(HTE, Heterogeneous Treatment Effect)</strong>라 부르고, 개인 수준으로 내리면 <strong>ITE(Individual Treatment Effect)</strong>가 된다. 조건부 평균으로 집계하면 <strong>CATE(Conditional Average Treatment Effect)</strong> — 실무에서 추정의 타겟이 되는 양이다.
 
 문제는 근본적이다. 한 환자에게 약을 주면서 동시에 안 줄 수 없다. **관찰되지 않는 반사실(counterfactual)의 벽.** 우리는 항상 potential outcome 중 하나만 관찰한다.
 
@@ -174,7 +174,7 @@ $$\hat{\tau}(x) = e(x) \hat{g}_0(x) + (1-e(x)) \hat{g}_1(x)$$
 
 ### 3. Overlap 위반
 
-**Positivity assumption** — $0 < P(T=1 \mid X=x) < 1$ for all $x$ — 이 위반되면, 해당 영역에서 $\hat{\mu}$는 사실상 **외삽(extrapolation)**이다.
+<strong>Positivity assumption</strong> — $0 < P(T=1 \mid X=x) < 1$ for all $x$ — 이 위반되면, 해당 영역에서 $\hat{\mu}$는 사실상 <strong>외삽(extrapolation)</strong>이다.
 
 ```mermaid
 graph LR
