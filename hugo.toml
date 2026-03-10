@@ -1,7 +1,7 @@
 baseURL = "https://winhun98.github.io/blog/"
 languageCode = "ko"
 defaultContentLanguage = "ko"
-title = "Research Notes"
+title = "Medical AI Research Notes"
 theme = "PaperMod"
 hasCJKLanguage = true
 
@@ -21,11 +21,16 @@ hasCJKLanguage = true
   showBreadCrumbs = true
   showCodeCopyButtons = true
   defaultTheme = "auto"
-  description = "의료 AI, 오프라인 강화학습, 뇌신경과학 연구 블로그"
+  description = "Clinical ML, Offline RL, and Neuroscience Research"
+  ShowFullTextinRSS = true
+
+  [params.label]
+    text = "MARN"
 
   [params.homeInfoParams]
-    Title = "Research Notes"
-    Content = "의료 AI와 뇌신경과학 연구를 기록합니다."
+    Title = "Medical AI Research Notes"
+    Content = """Clinical ML / Offline RL / Neuroscience
+Exploring the intersection of machine learning and medicine."""
 
 [[menu.main]]
   name = "Series"
@@ -41,6 +46,11 @@ hasCJKLanguage = true
   name = "Search"
   url = "/search/"
   weight = 15
+
+[[menu.main]]
+  name = "GitHub"
+  url = "https://github.com/winhun98"
+  weight = 20
 
 [markup]
   [markup.goldmark]
