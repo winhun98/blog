@@ -3,8 +3,8 @@
 <p>AUC 0.88이면 좋은 모델이라고 생각하기 쉽다. 맞는 말이지만, AUC는 <strong>순위</strong>만 평가한다. &ldquo;A 환자가 B 환자보다 위험하다&quot;는 맞추지만, &ldquo;A 환자의 위험도가 정확히 70%다&quot;는 보장하지 않는다. 실제로는 45%일 수도, 92%일 수도 있다.</p>
 <p>Reliability diagram을 처음 그려봤을 때 이게 얼마나 심한지 알았다. 예측 확률 0.8~0.9 구간의 실제 발생률이 0.55 정도였다. AUC는 멀쩡한데 확률 값 자체는 완전히 틀린 모델이었다.</p>
 <h2 id="calibration이란">Calibration이란</h2>
-<p>정의는 단순하다. &ldquo;예측 확률 $p$인 샘플들 중 실제 양성 비율이 $p$&ldquo;이면 **완벽히 보정됨(perfectly calibrated)**이다.</p>
-$$P(Y=1 \mid \hat{p}(X) = p) = p, \quad \forall p \in [0, 1]$$<p>이걸 측정하는 표준 지표가 **ECE(Expected Calibration Error)**다. 예측 확률을 $B$개 구간(bin)으로 나누고, 각 구간에서 예측 평균과 실제 빈도의 차이를 가중 평균한다.</p>
+<p>정의는 단순하다. &ldquo;예측 확률 $p$인 샘플들 중 실제 양성 비율이 $p$&ldquo;이면 <strong>완벽히 보정됨(perfectly calibrated)</strong>이다.</p>
+$$P(Y=1 \mid \hat{p}(X) = p) = p, \quad \forall p \in [0, 1]$$<p>이걸 측정하는 표준 지표가 <strong>ECE(Expected Calibration Error)</strong>다. 예측 확률을 $B$개 구간(bin)으로 나누고, 각 구간에서 예측 평균과 실제 빈도의 차이를 가중 평균한다.</p>
 $$ECE = \sum_{b=1}^{B} \frac{|B_b|}{n} \left| \text{acc}(B_b) - \text{conf}(B_b) \right|$$<p>$\text{acc}(B_b)$는 구간 $b$의 실제 양성 비율, $\text{conf}(B_b)$는 예측 확률 평균이다. ECE가 0이면 완벽, 낮을수록 좋다. <strong>Reliability diagram</strong>은 이걸 시각화한 것으로, 대각선에 가까울수록 잘 보정된 모델이다.</p>
 <p>ECE 자체가 bin 수에 꽤 민감하다는 점은 알아둘 필요가 있다. bin=10이냐 15냐에 따라 &ldquo;잘 보정됨&quot;과 &ldquo;개선 필요&rdquo; 사이를 오가는 경우가 있었다. 대안으로 등빈도 bin을 쓰는 ACE나, worst-case bin만 보는 MCE가 있다.</p>
 <pre tabindex="0"><code class="language-mermaid" data-lang="mermaid">xychart-beta

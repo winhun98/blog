@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/"><channel><title>Meta-Learner on Medical AI Research Notes</title><link>https://winhun98.github.io/blog/tags/meta-learner/</link><description>Recent content in Meta-Learner on Medical AI Research Notes</description><generator>Hugo</generator><language>ko</language><lastBuildDate>Mon, 09 Mar 2026 09:00:00 +0900</lastBuildDate><atom:link href="https://winhun98.github.io/blog/tags/meta-learner/index.xml" rel="self" type="application/rss+xml"/><item><title>T-Learner: 두 개의 모델로 치료 효과를 추정하는 법</title><link>https://winhun98.github.io/blog/posts/t-learner-meta-learner/</link><pubDate>Mon, 09 Mar 2026 09:00:00 +0900</pubDate><guid>https://winhun98.github.io/blog/posts/t-learner-meta-learner/</guid><description>같은 치료라도 환자마다 효과가 다르다. T-Learner는 이 차이를 두 개의 독립 모델로 추정한다.</description><content:encoded><![CDATA[<h2 id="문제">문제</h2>
 <p>환자 한 명이 응급실에 왔다. 약을 줄 것인가, 말 것인가.</p>
 <p>RCT에서 나온 <strong>ATE</strong>(Average Treatment Effect)는 &ldquo;이 약은 <em>평균적으로</em> 효과가 있다&quot;고 말해준다. 하지만 <strong>이 환자에게</strong> 얼마나 효과가 있을지는 알려주지 않는다. NIHSS 25점짜리 중증 환자와 3점짜리 경증 환자가 같은 약에서 같은 이득을 볼 리가 없다.</p>
-<p>이 환자 수준의 효과 차이를 **이질적 치료 효과(HTE, Heterogeneous Treatment Effect)**라 부르고, 개인 수준으로 내리면 **ITE(Individual Treatment Effect)**가 된다. 조건부 평균으로 집계하면 <strong>CATE(Conditional Average Treatment Effect)</strong> — 실무에서 추정의 타겟이 되는 양이다.</p>
+<p>이 환자 수준의 효과 차이를 <strong>이질적 치료 효과(HTE, Heterogeneous Treatment Effect)</strong>라 부르고, 개인 수준으로 내리면 <strong>ITE(Individual Treatment Effect)</strong>가 된다. 조건부 평균으로 집계하면 <strong>CATE(Conditional Average Treatment Effect)</strong> — 실무에서 추정의 타겟이 되는 양이다.</p>
 <p>문제는 근본적이다. 한 환자에게 약을 주면서 동시에 안 줄 수 없다. <strong>관찰되지 않는 반사실(counterfactual)의 벽.</strong> 우리는 항상 potential outcome 중 하나만 관찰한다.</p>
 <p>T-Learner는 이 벽을 우회하는 <em>가장 직관적인</em> 방법이다.</p>
 <h2 id="수학적-정의">수학적 정의</h2>
@@ -87,7 +87,7 @@ $$\hat{\tau}(x) = \underbrace{\hat{\mu}_1(x)}_{\text{자체 shrinkage}} - \under
 <p>X-Learner는 이 문제를 <strong>imputed treatment effect</strong>로 완화한다. 치료군에서 관찰된 결과와 대조군 모델의 예측을 비교하고, 그 차이 자체를 새로운 타겟으로 학습한다:</p>
 $$\tilde{\tau}_1 = Y_i^{(1)} - \hat{\mu}_0(X_i), \quad \tilde{\tau}_0 = \hat{\mu}_1(X_i) - Y_i^{(0)}$$$$\hat{\tau}(x) = e(x) \hat{g}_0(x) + (1-e(x)) \hat{g}_1(x)$$<p>여기서 $\hat{g}_1, \hat{g}_0$은 각각 $\tilde{\tau}_1, \tilde{\tau}_0$에 대한 regression이다. propensity score $e(x)$로 가중 평균을 취해서, <em>데이터가 많은 쪽에 더 의존</em>하도록 만든다.</p>
 <h3 id="3-overlap-위반">3. Overlap 위반</h3>
-<p><strong>Positivity assumption</strong> — $0 < P(T=1 \mid X=x) < 1$ for all $x$ — 이 위반되면, 해당 영역에서 $\hat{\mu}$는 사실상 **외삽(extrapolation)**이다.</p>
+<p><strong>Positivity assumption</strong> — $0 < P(T=1 \mid X=x) < 1$ for all $x$ — 이 위반되면, 해당 영역에서 $\hat{\mu}$는 사실상 <strong>외삽(extrapolation)</strong>이다.</p>
 <pre tabindex="0"><code class="language-mermaid" data-lang="mermaid">graph LR
     subgraph &#34;Propensity Score 분포&#34;
         A[&#34;e(x) ≈ 0&lt;br/&gt;&lt;b&gt;대조군만 존재&lt;/b&gt;&lt;br/&gt;&lt;i&gt;μ₁ 외삽 위험&lt;/i&gt;&#34;]

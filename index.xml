@@ -3,8 +3,8 @@
 <p>AUC 0.88이면 좋은 모델이라고 생각하기 쉽다. 맞는 말이지만, AUC는 <strong>순위</strong>만 평가한다. &ldquo;A 환자가 B 환자보다 위험하다&quot;는 맞추지만, &ldquo;A 환자의 위험도가 정확히 70%다&quot;는 보장하지 않는다. 실제로는 45%일 수도, 92%일 수도 있다.</p>
 <p>Reliability diagram을 처음 그려봤을 때 이게 얼마나 심한지 알았다. 예측 확률 0.8~0.9 구간의 실제 발생률이 0.55 정도였다. AUC는 멀쩡한데 확률 값 자체는 완전히 틀린 모델이었다.</p>
 <h2 id="calibration이란">Calibration이란</h2>
-<p>정의는 단순하다. &ldquo;예측 확률 $p$인 샘플들 중 실제 양성 비율이 $p$&ldquo;이면 **완벽히 보정됨(perfectly calibrated)**이다.</p>
-$$P(Y=1 \mid \hat{p}(X) = p) = p, \quad \forall p \in [0, 1]$$<p>이걸 측정하는 표준 지표가 **ECE(Expected Calibration Error)**다. 예측 확률을 $B$개 구간(bin)으로 나누고, 각 구간에서 예측 평균과 실제 빈도의 차이를 가중 평균한다.</p>
+<p>정의는 단순하다. &ldquo;예측 확률 $p$인 샘플들 중 실제 양성 비율이 $p$&ldquo;이면 <strong>완벽히 보정됨(perfectly calibrated)</strong>이다.</p>
+$$P(Y=1 \mid \hat{p}(X) = p) = p, \quad \forall p \in [0, 1]$$<p>이걸 측정하는 표준 지표가 <strong>ECE(Expected Calibration Error)</strong>다. 예측 확률을 $B$개 구간(bin)으로 나누고, 각 구간에서 예측 평균과 실제 빈도의 차이를 가중 평균한다.</p>
 $$ECE = \sum_{b=1}^{B} \frac{|B_b|}{n} \left| \text{acc}(B_b) - \text{conf}(B_b) \right|$$<p>$\text{acc}(B_b)$는 구간 $b$의 실제 양성 비율, $\text{conf}(B_b)$는 예측 확률 평균이다. ECE가 0이면 완벽, 낮을수록 좋다. <strong>Reliability diagram</strong>은 이걸 시각화한 것으로, 대각선에 가까울수록 잘 보정된 모델이다.</p>
 <p>ECE 자체가 bin 수에 꽤 민감하다는 점은 알아둘 필요가 있다. bin=10이냐 15냐에 따라 &ldquo;잘 보정됨&quot;과 &ldquo;개선 필요&rdquo; 사이를 오가는 경우가 있었다. 대안으로 등빈도 bin을 쓰는 ACE나, worst-case bin만 보는 MCE가 있다.</p>
 <pre tabindex="0"><code class="language-mermaid" data-lang="mermaid">xychart-beta
@@ -153,7 +153,7 @@ $$\hat{y} = m(f(x)), \quad m \text{은 단조증가}$$<p>Pool Adjacent Violators
 ]]></content:encoded></item><item><title>T-Learner: 두 개의 모델로 치료 효과를 추정하는 법</title><link>https://winhun98.github.io/blog/posts/t-learner-meta-learner/</link><pubDate>Mon, 09 Mar 2026 09:00:00 +0900</pubDate><guid>https://winhun98.github.io/blog/posts/t-learner-meta-learner/</guid><description>같은 치료라도 환자마다 효과가 다르다. T-Learner는 이 차이를 두 개의 독립 모델로 추정한다.</description><content:encoded><![CDATA[<h2 id="문제">문제</h2>
 <p>환자 한 명이 응급실에 왔다. 약을 줄 것인가, 말 것인가.</p>
 <p>RCT에서 나온 <strong>ATE</strong>(Average Treatment Effect)는 &ldquo;이 약은 <em>평균적으로</em> 효과가 있다&quot;고 말해준다. 하지만 <strong>이 환자에게</strong> 얼마나 효과가 있을지는 알려주지 않는다. NIHSS 25점짜리 중증 환자와 3점짜리 경증 환자가 같은 약에서 같은 이득을 볼 리가 없다.</p>
-<p>이 환자 수준의 효과 차이를 **이질적 치료 효과(HTE, Heterogeneous Treatment Effect)**라 부르고, 개인 수준으로 내리면 **ITE(Individual Treatment Effect)**가 된다. 조건부 평균으로 집계하면 <strong>CATE(Conditional Average Treatment Effect)</strong> — 실무에서 추정의 타겟이 되는 양이다.</p>
+<p>이 환자 수준의 효과 차이를 <strong>이질적 치료 효과(HTE, Heterogeneous Treatment Effect)</strong>라 부르고, 개인 수준으로 내리면 <strong>ITE(Individual Treatment Effect)</strong>가 된다. 조건부 평균으로 집계하면 <strong>CATE(Conditional Average Treatment Effect)</strong> — 실무에서 추정의 타겟이 되는 양이다.</p>
 <p>문제는 근본적이다. 한 환자에게 약을 주면서 동시에 안 줄 수 없다. <strong>관찰되지 않는 반사실(counterfactual)의 벽.</strong> 우리는 항상 potential outcome 중 하나만 관찰한다.</p>
 <p>T-Learner는 이 벽을 우회하는 <em>가장 직관적인</em> 방법이다.</p>
 <h2 id="수학적-정의">수학적 정의</h2>
@@ -239,7 +239,7 @@ $$\hat{\tau}(x) = \underbrace{\hat{\mu}_1(x)}_{\text{자체 shrinkage}} - \under
 <p>X-Learner는 이 문제를 <strong>imputed treatment effect</strong>로 완화한다. 치료군에서 관찰된 결과와 대조군 모델의 예측을 비교하고, 그 차이 자체를 새로운 타겟으로 학습한다:</p>
 $$\tilde{\tau}_1 = Y_i^{(1)} - \hat{\mu}_0(X_i), \quad \tilde{\tau}_0 = \hat{\mu}_1(X_i) - Y_i^{(0)}$$$$\hat{\tau}(x) = e(x) \hat{g}_0(x) + (1-e(x)) \hat{g}_1(x)$$<p>여기서 $\hat{g}_1, \hat{g}_0$은 각각 $\tilde{\tau}_1, \tilde{\tau}_0$에 대한 regression이다. propensity score $e(x)$로 가중 평균을 취해서, <em>데이터가 많은 쪽에 더 의존</em>하도록 만든다.</p>
 <h3 id="3-overlap-위반">3. Overlap 위반</h3>
-<p><strong>Positivity assumption</strong> — $0 < P(T=1 \mid X=x) < 1$ for all $x$ — 이 위반되면, 해당 영역에서 $\hat{\mu}$는 사실상 **외삽(extrapolation)**이다.</p>
+<p><strong>Positivity assumption</strong> — $0 < P(T=1 \mid X=x) < 1$ for all $x$ — 이 위반되면, 해당 영역에서 $\hat{\mu}$는 사실상 <strong>외삽(extrapolation)</strong>이다.</p>
 <pre tabindex="0"><code class="language-mermaid" data-lang="mermaid">graph LR
     subgraph &#34;Propensity Score 분포&#34;
         A[&#34;e(x) ≈ 0&lt;br/&gt;&lt;b&gt;대조군만 존재&lt;/b&gt;&lt;br/&gt;&lt;i&gt;μ₁ 외삽 위험&lt;/i&gt;&#34;]

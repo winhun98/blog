@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/"><channel><title>Test on Medical AI Research Notes</title><link>https://winhun98.github.io/blog/tags/test/</link><description>Recent content in Test on Medical AI Research Notes</description><generator>Hugo</generator><language>ko</language><lastBuildDate>Mon, 09 Mar 2026 16:00:00 +0900</lastBuildDate><atom:link href="https://winhun98.github.io/blog/tags/test/index.xml" rel="self" type="application/rss+xml"/><item><title>Mermaid 렌더링 테스트</title><link>https://winhun98.github.io/blog/posts/test-mermaid/</link><pubDate>Mon, 09 Mar 2026 16:00:00 +0900</pubDate><guid>https://winhun98.github.io/blog/posts/test-mermaid/</guid><description>&lt;p&gt;이것은 렌더링 테스트입니다.&lt;/p&gt;
+&lt;pre tabindex="0"&gt;&lt;code class="language-mermaid" data-lang="mermaid"&gt;graph LR
+A[환자 데이터] --&amp;gt; B[Feature Engineering]
+B --&amp;gt; C[Offline RL Agent]
+C --&amp;gt; D[치료 추천]
+D --&amp;gt; E[OPE 평가]
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;위 다이어그램은 자동 변환되어야 합니다.&lt;/p&gt;</description><content:encoded><![CDATA[<p>이것은 렌더링 테스트입니다.</p>
+<pre tabindex="0"><code class="language-mermaid" data-lang="mermaid">graph LR
+    A[환자 데이터] --&gt; B[Feature Engineering]
+    B --&gt; C[Offline RL Agent]
+    C --&gt; D[치료 추천]
+    D --&gt; E[OPE 평가]
+</code></pre><p>위 다이어그램은 자동 변환되어야 합니다.</p>
+]]></content:encoded></item></channel></rss>
