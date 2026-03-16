@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/"><channel><title>Orchestration on Medical AI Research Notes</title><link>https://winhun98.github.io/blog/tags/orchestration/</link><description>Recent content in Orchestration on Medical AI Research Notes</description><generator>Hugo</generator><language>ko</language><lastBuildDate>Sun, 15 Mar 2026 00:00:00 +0000</lastBuildDate><atom:link href="https://winhun98.github.io/blog/tags/orchestration/index.xml" rel="self" type="application/rss+xml"/><item><title>코드 없이 에이전트를 짠다 — Workflow Prompting이라는 역설</title><link>https://winhun98.github.io/blog/posts/workflow-prompting-orchestration/</link><pubDate>Sun, 15 Mar 2026 00:00:00 +0000</pubDate><guid>https://winhun98.github.io/blog/posts/workflow-prompting-orchestration/</guid><description>LangChain도, Python도 아닌 Markdown 파일 하나로 멀티에이전트 파이프라인을 정의하는 패러다임. Karpathy의 &amp;lsquo;prompts are programs&amp;rsquo;에서 시작해, 핵심 기법 5가지와 학술적 배경, 그리고 한계까지 정리했다.</description><content:encoded><![CDATA[<h2 id="software-30--프롬프트가-프로그램이-된-세계">Software 3.0 — 프롬프트가 프로그램이 된 세계</h2>
+<p>Karpathy는 소프트웨어의 진화를 세 단계로 나눴다. Software 1.0은 사람이 코드를 쓰고, 2.0은 데이터가 모델을 학습시키고, <strong>3.0은 자연어가 곧 프로그램이다.</strong> &ldquo;Prompts are programs&quot;라는 한 문장에 패러다임이 압축돼 있다.</p>
+<p>그런데 이게 비유가 아니라 리터럴하게 실현되고 있다. 2026년 초부터 GitHub, Anthropic, AWS, WSO2 같은 곳에서 <strong>Markdown 파일을 프로그램처럼 실행하는 시스템</strong>이 동시다발로 등장했다.</p>
+<ul>
+<li>GitHub은 <code>.github/workflows/</code>에 Markdown을 넣으면 CI/CD가 도는 <a href="https://github.github.com/gh-aw/"><strong>Agentic Workflows</strong></a>를 공개했다.</li>
+<li>WSO2는 YAML frontmatter + Markdown body를 에이전트 정의 표준으로 제안하는 <a href="https://github.com/wso2/agent-flavored-markdown"><strong>Agent-Flavored Markdown(AFM)</strong></a> 스펙을 발표했다.</li>
+<li>GitHub 블로그에서는 &ldquo;Markdown이 프로그래밍 언어&quot;라고 대놓고 쓰는 <a href="https://github.blog/ai-and-ml/generative-ai/spec-driven-development-using-markdown-as-a-programming-language-when-building-with-ai/"><strong>Spec-Driven Development</strong></a>를 밀고 있다.</li>
+</ul>
+<p>직접 운용해 본 입장에서, 이게 왜 작동하는지 정리한다.</p>
+<h2 id="workflow-prompting이란">Workflow Prompting이란</h2>
+<p>핵심은 간단하다. YAML frontmatter로 메타데이터(스케줄, 모델, 권한)를 정의하고, 본문에 자연어로 실행 로직을 적는다.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-markdown" data-lang="markdown"><span class="line"><span class="cl">---
+</span></span><span class="line"><span class="cl">schedule: &#34;0 8 <span class="ge">* *</span> *&#34;
+</span></span><span class="line"><span class="cl">model: claude-sonnet-4-6
+</span></span><span class="line"><span class="cl">---
+</span></span><span class="line"><span class="cl"><span class="k">1.</span> scp-gpu에 SSH 접속해서 GPU 상태를 확인한다
+</span></span><span class="line"><span class="cl"><span class="k">2.</span> 새 실험 결과가 있으면 다운로드한다
+</span></span><span class="line"><span class="cl"><span class="k">3.</span> 결과를 분석하고 Slack <span class="ni">#dev에</span> 보고한다
+</span></span><span class="line"><span class="cl"><span class="k">4.</span> 후속 실험이 필요하면 DB에 태스크를 등록한다
+</span></span></code></pre></div><p>런타임이 이 파일을 읽어서 <code>claude -p</code> 프로세스에 프롬프트로 넘기면, LLM이 각 단계를 도구 호출로 변환해서 실행한다. 솔직히 이건 &ldquo;프로그래밍&quot;이 아니라 **업무 지시서(SOP)**에 더 가깝다. 그리고 바로 그게 강점이다.</p>
+<p>학술적으로는 이미 근거가 있다. AIOS 프로젝트의 CoRE 프레임워크(<a href="https://arxiv.org/abs/2405.06907">arXiv 2405.06907</a>)는 LLM을 <strong>자연어 프로그램의 인터프리터</strong>로 정의했다. 프로그램의 각 단계는 Step Name, Step Type(Process/Decision/Terminal), Step Instruction, Step Connection으로 구성되고, 인터프리터가 단계마다 Observation → Input Construction → Output Analysis → Branching 절차를 실행한다. Workflow Prompting은 이 형식론의 실용적 구현인 셈이다.</p>
+<p><img alt="CoRE 시스템 개요 — LLM이 자연어 프로그램을 인터프리팅하는 전체 흐름" loading="lazy" src="https://arxiv.org/html/2405.06907v1/extracted/5590142/fig/Overview.png">
+<em>출처: Xu et al., &ldquo;AIOS Compiler: LLM as Interpreter for Natural Language Programming&rdquo; (<a href="https://arxiv.org/abs/2405.06907">arXiv:2405.06907</a>)</em></p>
+<h2 id="다섯-가지-핵심-기법">다섯 가지 핵심 기법</h2>
+<p>직접 운용하면서 패턴이 보이기 시작했다. 크게 5가지로 정리된다.</p>
+<pre tabindex="0"><code class="language-mermaid" data-lang="mermaid">graph LR
+    A[Frontmatter&lt;br/&gt;Constraint] --&gt; B[Step-by-Step&lt;br/&gt;ReAct]
+    B --&gt; C[Dynamic&lt;br/&gt;Routing]
+    C --&gt; D[Task-based&lt;br/&gt;Concurrency]
+    D --&gt; E[Aggregation &amp;&lt;br/&gt;Schema Enforcement]
+    style A fill:#1a1a2e,stroke:#e94560,color:#fff
+    style B fill:#1a1a2e,stroke:#e94560,color:#fff
+    style C fill:#1a1a2e,stroke:#e94560,color:#fff
+    style D fill:#1a1a2e,stroke:#e94560,color:#fff
+    style E fill:#1a1a2e,stroke:#e94560,color:#fff
+</code></pre><h3 id="1-frontmatter-constraint">1. Frontmatter Constraint</h3>
+<p>YAML로 모델, 스케줄, 알림 여부, 보안 레벨을 선언한다. 코드의 config 파일에 해당하지만, 프롬프트와 같은 파일에 있어서 컨텍스트가 분리되지 않는다.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-yaml" data-lang="yaml"><span class="line"><span class="cl"><span class="nn">---</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l">security-reviewer</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="l">Reviews code for security vulnerabilities</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="nt">tools</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="l">Read, Grep, Glob]</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="nt">model</span><span class="p">:</span><span class="w"> </span><span class="l">opus</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="nn">---</span><span class="w">
+</span></span></span></code></pre></div><p>Claude Code, GitHub Copilot의 Custom Agents, AFM 모두 이 패턴을 채택했다. **Frontmatter = HOW (기술 설정), Markdown body = WHAT (행동 지시)**라는 관심사 분리가 핵심이다. 12개 skill 파일로 회사를 운영한다는 <a href="https://adventuresinclaude.ai/posts/2026-02-21-running-a-company-on-markdown-files/">CompanyOS</a> 사례에서도 이 구조가 기본 단위다.</p>
+<h3 id="2-step-by-step-react">2. Step-by-Step ReAct</h3>
+<p>번호 매긴 단계별 지시. LLM은 각 단계를 순서대로 실행하면서 중간 결과를 다음 단계의 입력으로 쓴다. <code>if</code>문 없이 &ldquo;새 결과가 있으면&quot;이라고 쓰면 LLM이 알아서 분기한다.</p>
+<p>이론적 뿌리는 ReAct(Yao et al., 2022)다. reasoning trace와 action을 인터리브하면서 실행하는 패턴인데, Workflow Prompting은 이걸 <strong>단일 LLM 호출에서 다중 단계/다중 에이전트로 확장</strong>한 것이다.</p>
+<p><img alt="ReAct 프레임워크 — Thought, Action, Observation의 인터리브 실행" loading="lazy" src="https://www.promptingguide.ai/_next/image?url=%2F_next%2Fstatic%2Fmedia%2Freact.8e7c93ae.png&w=1920&q=75">
+<em>출처: Yao et al., &ldquo;ReAct: Synergizing Reasoning and Acting in Language Models&rdquo; (<a href="https://arxiv.org/abs/2210.03629">arXiv:2210.03629</a>), 이미지 via <a href="https://www.promptingguide.ai/techniques/react">Prompt Engineering Guide</a></em></p>
+<p>AWS Strands의 Agent SOPs는 여기에 RFC 2119 키워드를 도입해서 정밀도를 높인다. <strong>MUST</strong>(절대적 요구), <strong>SHOULD</strong>(권장, 합리적 이유로 생략 가능), <strong>MAY</strong>(선택적). rigid scripting 없이도 일관된 실행을 끌어내는 트릭이다. 실제로 써보니 &ldquo;반드시 GPU 상태를 먼저 확인한다&quot;와 &ldquo;GPU 상태를 확인하면 좋겠다&quot;는 행동 차이가 뚜렷했다.</p>
+<h3 id="3-dynamic-routing">3. Dynamic Routing</h3>
+<p>&ldquo;긴급하면 Telegram, 아니면 Slack&quot;처럼 조건부 라우팅을 자연어로 표현한다. 코드로 치면 router 패턴인데, 자연어가 오히려 의도를 명확하게 전달한다. 에스컬레이션 경로를 &ldquo;팀원 → 매니저 → 사용자&quot;로 적으면 그게 라우팅 로직 전부다. Python으로 짜면 if-elif 체인에 알림 SDK 임포트까지 붙는다.</p>
+<h3 id="4-task-based-concurrency">4. Task-based Concurrency</h3>
+<p>Agent 도구로 서브에이전트를 병렬 실행한다. &ldquo;3개 소스를 동시에 조사하고 결과를 모아라&quot;가 곧 <code>Promise.all()</code>이다.</p>
+<p>실용적 한계는 <strong>동시 3~5개</strong>라는 경험칙이 있다. 그 이상 올리면 결과 수집 과정에서 누락이 생기거나, 토큰 사용량이 폭발한다. 통신은 파일 기반(Claude Code)이거나 event stream 기반(OpenHands)인데, 에이전트 간 직접 대화가 없는 게 오히려 안정성에 기여한다. 결합도가 낮으니까.</p>
+<h3 id="5-aggregation--schema-enforcement">5. Aggregation &amp; Schema Enforcement</h3>
+<p>서브에이전트 결과를 합치고 출력 포맷을 강제한다. &ldquo;아래 템플릿에 맞춰 정리하라&quot;가 JSON schema 역할을 한다.</p>
+<p>CompanyOS에서는 7-section skill template(Frontmatter → When to use → Context → Process → Output format → Guardrails → Standalone mode)으로 모든 skill의 출력을 규격화한다. 이 정도 구조를 갖추면 자연어임에도 예측 가능한 출력이 나온다.</p>
+<p>이 다섯 가지를 조합하면 꽤 복잡한 파이프라인도 만들 수 있다. <a href="https://adventuresinclaude.ai/posts/2026-02-21-running-a-company-on-markdown-files/">CompanyOS</a> 사례는 12개 skill 파일, 5개 commands, 2개 agents — 총 ~2,000줄 Markdown으로 회사 운영을 자동화한다.</p>
+<h2 id="코드-오케스트레이션과-뭐가-다른가">코드 오케스트레이션과 뭐가 다른가</h2>
+<p>Anthropic은 2024년 12월 &ldquo;<a href="https://www.anthropic.com/research/building-effective-agents">Building Effective Agents</a>&ldquo;에서 5가지 워크플로우 패턴을 제시했다. Prompt Chaining, Routing, Parallelization, Orchestrator-Workers, Evaluator-Optimizer. 핵심 조언은 이거다: <em>&ldquo;Start with simple prompts&hellip; add multi-step agentic systems only when simpler solutions fall short.&rdquo;</em></p>
+<p><img alt="Routing 패턴 — 입력을 분류해 전문 처리 경로로 분기" loading="lazy" src="https://cdn.sanity.io/images/4zrzovbb/website/5c0c0e9fe4def0b584c04d37849941da55e5e71c-2401x1000.png"></p>
+<p><img alt="Orchestrator-Workers 패턴 — 오케스트레이터가 동적으로 하위 작업을 분해하고 위임" loading="lazy" src="https://cdn.sanity.io/images/4zrzovbb/website/8985fc683fae4780fb34eab1365ab78c7e51bc8e-2401x1000.png">
+<em>출처: Anthropic, &ldquo;<a href="https://www.anthropic.com/research/building-effective-agents">Building Effective Agents</a>&rdquo; (2024.12)</em></p>
+<p>그리고 한마디를 더 붙였다. <em>&ldquo;Many patterns can be implemented in a few lines of code.&rdquo;</em> <strong>프레임워크 대신 직접 API 호출을 권장</strong>한다. Workflow Prompting은 이 철학의 극단적 실현이다. 코드 몇 줄이 아니라, 코드를 아예 없앴다.</p>
+<table>
+  <thead>
+      <tr>
+          <th>차원</th>
+          <th>Workflow Prompting</th>
+          <th>LangGraph</th>
+          <th>CrewAI</th>
+          <th>AutoGen</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><strong>철학</strong></td>
+          <td>자연어가 프로그램</td>
+          <td>그래프 기반 상태 머신</td>
+          <td>역할 기반 팀</td>
+          <td>대화 기반 협업</td>
+      </tr>
+      <tr>
+          <td><strong>제어</strong></td>
+          <td>LLM이 해석/결정</td>
+          <td>명시적 DAG</td>
+          <td>역할 할당 + 위임</td>
+          <td>에이전트 간 채팅</td>
+      </tr>
+      <tr>
+          <td><strong>결정론성</strong></td>
+          <td>낮음 (확률적)</td>
+          <td>높음</td>
+          <td>중간</td>
+          <td>중간</td>
+      </tr>
+      <tr>
+          <td><strong>디버깅</strong></td>
+          <td>어려움</td>
+          <td>쉬움 (state machine)</td>
+          <td>중간</td>
+          <td>중간</td>
+      </tr>
+      <tr>
+          <td><strong>진입 장벽</strong></td>
+          <td>매우 낮음</td>
+          <td>높음 (Python + 그래프)</td>
+          <td>중간</td>
+          <td>중간</td>
+      </tr>
+      <tr>
+          <td><strong>토큰 효율</strong></td>
+          <td>낮음 (매 호출에 전체 prompt)</td>
+          <td>효율적 (state 관리)</td>
+          <td>낮음 (자율 추론)</td>
+          <td>변동적</td>
+      </tr>
+      <tr>
+          <td><strong>영속성</strong></td>
+          <td>없음 (별도 구현)</td>
+          <td>Postgres/Redis</td>
+          <td>없음 (기본)</td>
+          <td>없음 (기본)</td>
+      </tr>
+  </tbody>
+</table>
+<p>마지막 두 행이 중요하다. Workflow Prompting은 매 호출에 전체 프롬프트를 보내야 하므로 토큰을 많이 먹고, 상태 영속성이 기본 제공되지 않는다. 프로덕션에서 쓰려면 별도로 상태 저장 레이어(PostgreSQL, Redis 등)를 구축해야 한다. LangGraph가 기본 제공하는 걸 수동으로 만드는 셈이다.</p>
+<p>그런데도 Markdown 방식을 선택하는 이유가 있다. <strong>수정 → 반영이 30초</strong>라는 점이다. 코드 오케스트레이션은 SDK 업데이트, 타입 수정, 테스트, 배포 파이프라인을 거쳐야 한다. Markdown은 파일 저장하면 끝이다.</p>
+<h2 id="실전에서-배운-것">실전에서 배운 것</h2>
+<p>3주 넘게 운용하면서 몇 가지를 배웠다.</p>
+<p><strong>프롬프트가 길어지면 망한다.</strong> 100줄 넘어가면 LLM이 중간 단계를 건너뛴다. 한 job은 한 가지 책임만 지게 하고, 복잡한 워크플로우는 DB 태스크 체인으로 연결하는 게 낫다. 이건 Karpathy의 autoresearch에서도 같은 원리다 — 컨텍스트 윈도우를 철저히 보호해야 에이전트가 수백 번 반복해도 환각에 빠지지 않는다.</p>
+<p><strong>identity override가 의외로 중요하다.</strong> &ldquo;너는 Scout이다, 논문을 찾아라&quot;처럼 역할을 부여하면 행동 패턴이 확연히 달라진다. 같은 Claude Sonnet이 에이전트 이름만 바꿔도 다른 스타일로 보고서를 쓴다. agency-agents 프로젝트는 55개 전문가 프롬프트를 Identity, Mission, Critical Rules, Workflow, Success Metrics 구조로 정의하는데, 이 구조를 참고해서 내 팀의 에이전트 프롬프트를 설계했다.</p>
+<p><strong>모델 선택이 비용의 90%다.</strong> 매일 도는 14개 job 중 Opus가 필요한 건 2개(논문 필터링, 임상 검증)뿐이었다. 나머지를 Sonnet이나 Haiku로 내리는 것만으로 사용량이 절반 이하로 줄었다. Cloudflare는 Markdown for Agents로 HTML 대비 토큰 80% 절감을 주장하는데, 실제로 프롬프트 자체를 Markdown으로 간결하게 쓰는 것만으로도 효과가 있다.</p>
+<p><strong>RFC 2119 키워드가 실행 품질을 바꾼다.</strong> &ldquo;GPU 상태를 확인한다&quot;보다 &ldquo;MUST: GPU 상태를 먼저 확인한다&quot;가 skip율이 낮다. AWS Strands의 Agent SOPs에서 차용한 패턴인데, 자연어 프로그램의 일관성을 올리는 간단하면서도 효과적인 트릭이다.</p>
+<h2 id="이-패러다임의-한계">이 패러다임의 한계</h2>
+<p>솔직해져야 할 부분이 있다.</p>
+<p><strong>비결정론이 근본 문제다.</strong> 같은 Markdown 프롬프트로도 실행마다 결과가 달라진다. 같은 job이 어떤 날은 3줄짜리 보고를 보내고 어떤 날은 10줄을 보낸다. 핸드오프 정의가 모호하면 태스크 중복(토큰 낭비)이나 워크플로우 데드락이 생긴다.</p>
+<p><strong>디버깅이 블랙박스다.</strong> 코드 오케스트레이션은 스택 트레이스가 명확하지만, 자연어 프로그램은 <strong>왜 특정 분기를 택했는지</strong> 추적이 어렵다. Anthropic도 인정한다: <em>&ldquo;Frameworks introduce abstraction layers that obscure prompts and responses, making debugging harder.&rdquo;</em> 자연어 프로그램은 프레임워크보다 더 심하다.</p>
+<p><strong>보안은 아키텍처적 미해결 문제다.</strong> SQL injection은 prepared statement로 해결했지만, <strong>자연어에는 동등한 해법이 없다.</strong> LLM은 instruction과 data를 구분하지 못한다. 각 tool call이 잠재적 보안 경계인데, 공격자가 LLM의 tool selection을 조작하면 에이전트 권한을 남용할 수 있다. PreToolUse Hook으로 위험 명령을 차단하는 정도가 현재 가능한 최선이다.</p>
+<p>결국 <strong>결과의 정확도보다 실행 여부가 중요한 작업</strong>에 잘 맞는다. 논문 스캔, 모니터링, 노트 정리, 일일 브리핑 같은 것들. 반대로 정밀한 데이터 처리, 수치 계산, 감사 추적이 필요한 작업에는 여전히 코드가 맞다.</p>
+<h2 id="정리">정리</h2>
+<p>Workflow Prompting은 LLM을 &ldquo;코드 생성기&quot;가 아니라 &ldquo;업무 실행자&quot;로 쓰는 패러다임이다. ReAct의 이론적 기반 위에, YAML frontmatter와 자연어 본문으로 멀티에이전트 파이프라인을 정의한다. 비결정론과 보안이라는 근본적 한계가 있지만, 그걸 감수할 수 있는 영역이 생각보다 넓다.</p>
+<p>2026년 초에 GitHub Agentic Workflows, AFM, CompanyOS, Spec-Driven Development가 동시에 등장한 건 우연이 아닐 것이다. Karpathy가 autoresearch에서 보여준 것처럼, LLM 에이전트의 핵심은 더 좋은 코드가 아니라 더 좋은 지시서를 쓰는 데 있다.</p>
+]]></content:encoded></item></channel></rss>
